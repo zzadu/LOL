@@ -21,6 +21,7 @@ ALOLPlayer::ALOLPlayer()
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>("SpringArm");
 	SpringArm->SetupAttachment(GetCapsuleComponent());
+	SpringArm->SetUsingAbsoluteRotation(true);
 
 	Camera = CreateDefaultSubobject<UCameraComponent>("Camera");
 	Camera->SetupAttachment(SpringArm);
@@ -28,8 +29,8 @@ ALOLPlayer::ALOLPlayer()
 
 	SpringArm->TargetArmLength = 800.f;
 	SpringArm->SetRelativeRotation(FRotator(-60, 0, 0));
-
-	GetMesh()->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -88.f), FRotator(0.f, 0.f, 180.f));
+	
+	GetMesh()->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -88.f), FRotator(0.f, 180.f, 0.f));
 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
@@ -57,4 +58,5 @@ void ALOLPlayer::PossessedBy(AController* NewController)
 
 	LOLPlayerController = Cast<ALOLPlayerController>(PlayerController);
 	LOLPlayerController->SetupInputComponent();
+
 }
