@@ -6,7 +6,20 @@
 #include "GameFramework/PlayerController.h"
 #include "LOLPlayerController.generated.h"
 
+class UAbilitySystemComponent;
 class UInputMappingContext;
+
+#define SKILL_Q	0;
+#define SKILL_W 1;
+#define SKILL_E 2;
+#define SKILL_R 3;
+
+#define SPELL_D 4;
+#define SPELL_F	5;
+
+#define AUTO_ATTACK	10;
+
+
 /**
  * 
  */
@@ -20,8 +33,10 @@ public:
 
 public:
 	virtual void BeginPlay() override;
+	virtual void PlayerTick(float DeltaTime) override;
 	void SetupInputMappingContext();
 	virtual void SetupInputComponent() override;
+	void SetupGASInputComponent();
 	
 	// Input Section
 protected:
@@ -38,11 +53,23 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> SkillAction;
 
+	// Move
+	TObjectPtr<class ALOLPlayer> TargetActor;
+	
 	void Move();
-	void Attack(class AActor* Target);
+	void AutoAttack(class AActor* Target);
+	void EndAutoAttack();
 
 	// Pawn
 	protected:
-	TObjectPtr<class ALOLPlayer> LOLPlayer;
+	TObjectPtr<class ALOLGASPlayer> LOLPlayer;
+
+	// ASC
+protected:
+	UPROPERTY(EditAnywhere, Category = GAS)
+	TObjectPtr<class UAbilitySystemComponent> ASC;
+
+	void GASInputPressed(int32 InputId);
+	void GASInputReleased(int32 InputId);
 	
 };

@@ -2,10 +2,13 @@
 
 
 #include "Player/LOLPlayerController.h"
+
+#include "AbilitySystemComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Character/LOLPlayer.h"
+#include "GAS/Character/LOLGASPlayer.h"
 #include "Kismet/KismetMathLibrary.h"
 
 
@@ -13,6 +16,7 @@ ALOLPlayerController::ALOLPlayerController()
 {
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Default;
+	TargetActor = nullptr;
 }
 
 void ALOLPlayerController::BeginPlay()
@@ -20,7 +24,26 @@ void ALOLPlayerController::BeginPlay()
 	Super::BeginPlay();
 	
 	SetupInputMappingContext();
-	LOLPlayer = Cast<ALOLPlayer>(GetCharacter());
+
+}
+
+void ALOLPlayerController::PlayerTick(float DeltaTime)
+{
+	Super::PlayerTick(DeltaTime);
+
+	if (TargetActor)
+	{
+		float const Distance = FVector::Dist(TargetActor->GetActorLocation(), LOLPlayer->GetActorLocation());
+		if (Distance < 600.f)
+		{
+			StopMovement();
+			AutoAttack(TargetActor);
+		}
+		else
+		{
+			UAIBlueprintHelperLibrary::SimpleMoveToActor(this, TargetActor);
+		}
+	}
 }
 
 void ALOLPlayerController::SetupInputMappingContext()
@@ -43,6 +66,19 @@ void ALOLPlayerController::SetupInputComponent()
 	
 }
 
+void ALOLPlayerController::SetupGASInputComponent()
+{
+	LOLPlayer = Cast<ALOLGASPlayer>(GetCharacter());
+	ASC = LOLPlayer->GetAbilitySystemComponent();
+	if (IsValid(ASC) && IsValid(InputComponent))
+	{
+		UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent);
+
+		EnhancedInputComponent->BindAction(SkillAction, ETriggerEvent::Triggered, this, &ALOLPlayerController::GASInputPressed, 0);
+		EnhancedInputComponent->BindAction(SkillAction, ETriggerEvent::Completed, this, &ALOLPlayerController::GASInputReleased, 0);
+	}
+}
+
 void ALOLPlayerController::Move()
 {
 	FHitResult Hit;
@@ -50,36 +86,69 @@ void ALOLPlayerController::Move()
 
 	if (bHitSuccessful)
 	{
-		ALOLPlayer* TargetActor = Cast<ALOLPlayer>(Hit.GetActor());
-		if (TargetActor)
+		FRotator Rotator = UKismetMathLibrary::FindLookAtRotation(LOLPlayer->GetActorLocation(), Hit.Location);
+		LOLPlayer->SetActorRotation(Rotator);
+		
+		TargetActor = Cast<ALOLPlayer>(Hit.GetActor());
+		if (!TargetActor)
 		{
-			FRotator Rotator = UKismetMathLibrary::FindLookAtRotation(LOLPlayer->GetActorLocation(), TargetActor->GetActorLocation());
-			LOLPlayer->SetActorRotation(Rotator);
-			Attack(Hit.GetActor());
-		}
-		else
-		{
-			FRotator Rotator = UKismetMathLibrary::FindLookAtRotation(LOLPlayer->GetActorLocation(), Hit.Location);
-			LOLPlayer->SetActorRotation(Rotator);
+			EndAutoAttack();
 			UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, Hit.Location);
 		}
 	}
 }
 
-void ALOLPlayerController::Attack(class AActor* Target)
+void ALOLPlayerController::AutoAttack(class AActor* Target)
 {
-	
-	if (LOLPlayer)
+	FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromInputID(10);
+	if (Spec)
 	{
-		float const Distance = FVector::Dist(Target->GetActorLocation(), LOLPlayer->GetActorLocation());
-		if (Distance < 100.f)
+			if (Spec->Level != 0)
+			{
+				ASC->TryActivateAbility(Spec->Handle);
+				
+			}
+	}
+}
+
+void ALOLPlayerController::EndAutoAttack()
+{
+	FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromInputID(10);
+	if (Spec)
+	{
+		ASC->CancelAbility(Spec->Ability);
+	}
+}
+
+void ALOLPlayerController::GASInputPressed(int32 InputId)
+{
+	FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromInputID(InputId);
+	if (Spec)
+	{
+		Spec->InputPressed = true;
+		if (Spec->IsActive())
 		{
-			StopMovement();
-			// 공격 effect
+			//ASC->AbilitySpecInputPressed(*Spec);
 		}
 		else
 		{
-			UAIBlueprintHelperLibrary::SimpleMoveToActor(this, Target);
+			if (Spec->Level != 0)
+			{
+				ASC->TryActivateAbility(Spec->Handle);
+			}
+		}
+	}
+}
+
+void ALOLPlayerController::GASInputReleased(int32 InputId)
+{
+	FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromInputID(InputId);
+	if (Spec)
+	{
+		Spec->InputPressed = false;
+		if (Spec->IsActive())
+		{
+			ASC->AbilitySpecInputReleased(*Spec);
 		}
 	}
 }
