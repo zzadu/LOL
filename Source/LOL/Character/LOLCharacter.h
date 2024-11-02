@@ -16,7 +16,7 @@ public:
 	ALOLCharacter();
 
 public:
-	FORCEINLINE virtual class UAnimMontage* GetSkillActionMontage() const { return AttackActionMontage; }
+	FORCEINLINE virtual class UAnimMontage* GetAutoAttackActionMontage() const { return AutoAttackActionMontage; }
 
 protected:
 	// Called when the game starts or when spawned
@@ -24,7 +24,7 @@ protected:
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = GAS)
-	TObjectPtr<class UAnimMontage> AttackActionMontage;
+	TObjectPtr<class UAnimMontage> AutoAttackActionMontage;
 
 
 	// Dead Section
