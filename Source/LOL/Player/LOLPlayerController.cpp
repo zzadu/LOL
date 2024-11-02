@@ -34,7 +34,7 @@ void ALOLPlayerController::PlayerTick(float DeltaTime)
 	if (TargetActor)
 	{
 		float const Distance = FVector::Dist(TargetActor->GetActorLocation(), LOLPlayer->GetActorLocation());
-		if (Distance < 600.f)
+		if (Distance < 300.f)
 		{
 			StopMovement();
 			AutoAttack(TargetActor);
@@ -128,7 +128,7 @@ void ALOLPlayerController::GASInputPressed(int32 InputId)
 		Spec->InputPressed = true;
 		if (Spec->IsActive())
 		{
-			//ASC->AbilitySpecInputPressed(*Spec);
+			ASC->AbilitySpecInputPressed(*Spec);
 		}
 		else
 		{

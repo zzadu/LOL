@@ -29,8 +29,16 @@ protected:
 	TObjectPtr<class UAbilitySystemComponent> ASC;
 
 	UPROPERTY(EditAnywhere, Category = GAS)
-	TMap<int32, TSubclassOf<class UGameplayAbility>> StartAbilities;
+	TMap<int32, TSubclassOf<class UGameplayAbility>> StartInputAbilities;
 
 	UPROPERTY(EditAnywhere, Category = GAS)
 	TArray<TSubclassOf<class UGameplayAbility>> SkillAbilities;
+
+public:
+	FORCEINLINE virtual class UAnimMontage* GetSkillActionMontage() const { return SkillActionMontage; }
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = GAS)
+	TObjectPtr<class UAnimMontage> SkillActionMontage;
+
 };

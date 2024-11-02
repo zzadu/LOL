@@ -3,7 +3,6 @@
 
 #include "GAS/Character/LOLGASPlayer.h"
 #include "AbilitySystemComponent.h"
-#include "EnhancedInputComponent.h"
 #include "GAS/Player/LOLGASPlayerState.h"
 #include "Player/LOLPlayerController.h"
 
@@ -22,7 +21,7 @@ void ALOLGASPlayer::PossessedBy(AController* NewController)
 		ASC = GASPS->GetAbilitySystemComponent();
 		ASC->InitAbilityActorInfo(GASPS, this);
 
-		for (const auto& StartAbility : StartAbilities)
+		for (const auto& StartAbility : StartInputAbilities)
 		{
 			FGameplayAbilitySpec StartSpec(StartAbility.Value);
 			StartSpec.InputID = StartAbility.Key;
