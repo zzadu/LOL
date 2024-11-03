@@ -21,12 +21,17 @@ void ALOLGASPlayer::PossessedBy(AController* NewController)
 		ASC = GASPS->GetAbilitySystemComponent();
 		ASC->InitAbilityActorInfo(GASPS, this);
 
-		for (const auto& StartAbility : StartInputAbilities)
+		for (const auto& StartAbility : StartAbilities)
 		{
-			FGameplayAbilitySpec StartSpec(StartAbility.Value);
-			StartSpec.InputID = StartAbility.Key;
+			FGameplayAbilitySpec StartSpec(StartAbility);
 			ASC->GiveAbility(StartSpec);
-			std::cout << StartSpec.Level;
+		}
+
+		for (const auto& StartInputAbility : StartInputAbilities)
+		{
+			FGameplayAbilitySpec StartSpec(StartInputAbility.Value);
+			StartSpec.InputID = StartInputAbility.Key;
+			ASC->GiveAbility(StartSpec);
 		}
 
 		int32 InputId = 0;
@@ -35,7 +40,6 @@ void ALOLGASPlayer::PossessedBy(AController* NewController)
 			FGameplayAbilitySpec StartSpec(SkillAbility);
 			StartSpec.InputID = InputId++;
 			ASC->GiveAbility(StartSpec);
-			std::cout << StartSpec.Level;
 		}
 		
 		LOLPlayerController->SetupGASInputComponent();
