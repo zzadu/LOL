@@ -32,11 +32,4 @@ protected:
 
 	UFUNCTION()
 	void OnInterruptedCallback();
-	
-protected:
-	UPROPERTY(VIsibleAnywhere)
-	FVector2D CachedDestination;
-
-	UPROPERTY(VisibleAnywhere)
-	ACharacter* TargetActor;
 };

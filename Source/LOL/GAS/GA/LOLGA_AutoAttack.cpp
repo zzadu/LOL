@@ -45,7 +45,6 @@ void ULOLGA_AutoAttack::EndAbility(const FGameplayAbilitySpecHandle Handle, cons
 void ULOLGA_AutoAttack::InputPressed(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
 {
-	LOL_LOG(LogLOL, Log, TEXT("Begin"));
 }
 
 void ULOLGA_AutoAttack::OnCompleteCallback()
