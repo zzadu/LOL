@@ -60,3 +60,8 @@ void ALOLPlayer::PossessedBy(AController* NewController)
 	LOLPlayerController->SetupInputComponent();
 
 }
+
+ALOLPlayerController* ALOLPlayer::GetController()
+{
+	return LOLPlayerController;
+}

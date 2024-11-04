@@ -6,6 +6,9 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "GAS/GA/AT/LOLAT_Trace.h"
 #include "GAS/GA/TA/LOLTA_Trace.h"
+#include "GAS/Attribute/LOLCharacterAttributeSet.h"
+#include "GAS/Attribute/LOLSkillAttributeSet.h"
+#include "Kismet/KismetMathLibrary.h"
 
 ULOLGA_SkillAttackHitCheck::ULOLGA_SkillAttackHitCheck()
 {
@@ -32,6 +35,40 @@ void ULOLGA_SkillAttackHitCheck::OnTraceResultCallback(const FGameplayAbilityTar
 	{
 		FHitResult HitResult = UAbilitySystemBlueprintLibrary::GetHitResultFromTargetData(TargetDataHandle, 0);
 		LOL_LOG(LogLOL, Log, TEXT("Target %s Detected"), *HitResult.GetActor()->GetName());
+
+		UAbilitySystemComponent* SourceASC = GetAbilitySystemComponentFromActorInfo_Checked();
+		UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(HitResult.GetActor());
+
+		if (!SourceASC || !TargetASC)
+		{
+			LOL_LOG(LogLOL, Error, TEXT("ASC not found!"));
+			return;
+		}
+
+		const ULOLSkillAttributeSet* SourceAttr = SourceASC->GetSet<ULOLSkillAttributeSet>();
+		ULOLCharacterAttributeSet* TargetAttr = const_cast<ULOLCharacterAttributeSet*>(TargetASC->GetSet<ULOLCharacterAttributeSet>());
+
+		if (!SourceAttr || !TargetAttr)
+		{
+			LOL_LOG(LogLOL, Error, TEXT("Attribute not found!"));
+			return;
+		}
+
+		float const Distance = FVector::Dist(GetAvatarActorFromActorInfo()->GetActorLocation(), HitResult.GetActor()->GetActorLocation());
+		if (Distance < SourceAttr->GetSkillRange())
+		{
+			FRotator Rotator = UKismetMathLibrary::FindLookAtRotation(GetAvatarActorFromActorInfo()->GetActorLocation(), HitResult.GetActor()->GetActorLocation());
+			Rotator.Pitch = 0.0f;
+			GetAvatarActorFromActorInfo()->SetActorRotation(Rotator);
+			
+			const float AttackDamage = SourceAttr->GetSkillRate();
+			TargetAttr->SetHealth(TargetAttr->GetHealth() - AttackDamage);
+		}
+		else
+		{
+			LOL_LOG(LogLOL, Error, TEXT("Distance is far"));
+		}
+		
 	}
 
 	bool bReplicateEndAbility = true;

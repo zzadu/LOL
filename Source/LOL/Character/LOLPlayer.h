@@ -31,6 +31,10 @@ protected:
 	// UPROPERTY(VisibleAnywhere)
 	// TObjectPtr<class ULOLWidgetComponent> HpBar;
 
+public:
+	class ALOLPlayerController* GetController();
+	
+protected:
 	TObjectPtr<class ALOLPlayerController> LOLPlayerController;
 
 protected:

@@ -7,6 +7,15 @@
 #include "Components/CapsuleComponent.h"
 #include "Physics/LOLCollision.h"
 #include "DrawDebugHelpers.h"
+#include "AbilitySystemComponent.h"
+#include "GAS/Attribute/LOLCharacterAttributeSet.h"
+#include "AbilitySystemBlueprintLibrary.h"
+#include "InteractiveToolManager.h"
+#include "LOL.h"
+#include "Character/LOLCharacter.h"
+#include "Character/LOLPlayer.h"
+#include "GAS/Attribute/LOLSkillAttributeSet.h"
+#include "Player/LOLPlayerController.h"
 
 ALOLTA_Trace::ALOLTA_Trace()
 {
@@ -33,17 +42,36 @@ FGameplayAbilityTargetDataHandle ALOLTA_Trace::MakeTargetData() const
 	// 타겟팅, 단일 타겟 스킬
 	ACharacter* Character = CastChecked<ACharacter>(SourceActor);
 
-	FHitResult OutHitResult;
-	const float AttackRange = 500.0f;
-	const float AttackRadius = 50.0f;
+	UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(SourceActor);
+	if (!ASC)
+	{
+		LOL_LOG(LogLOL, Error, TEXT("ASC not found!"));
+		return FGameplayAbilityTargetDataHandle();
+	}
 
-	// 플레이어가 바라보는 방향이 아니라 마우스 시작으로 탐지하는 걸로 바꿔야 함
-	FCollisionQueryParams Params(SCENE_QUERY_STAT(ULOLTA_Trace), false, Character);
-	const FVector Forward = Character->GetActorForwardVector();
-	const FVector Start = Character->GetActorLocation() + Forward * Character->GetCapsuleComponent()->GetScaledCapsuleRadius();
-	const FVector End = Start + Forward * AttackRange;
+	const ULOLSkillAttributeSet* AttributeSet = ASC->GetSet<ULOLSkillAttributeSet>();
+	if (!AttributeSet)
+	{
+		LOL_LOG(LogLOL, Error, TEXT("LOLSkillAttributeSet not found!"));
+		return FGameplayAbilityTargetDataHandle();
+	}
 	
-	bool HitDetected = GetWorld()->LineTraceSingleByChannel(OutHitResult, Start, End, CCHANNEL_ABACTION, Params);
+	FHitResult OutHitResult;
+
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(ULOLTA_Trace), false, Character);
+
+	ALOLPlayerController* PC = Cast<ALOLPlayer>(SourceActor)->GetController();
+	if (!PC)
+	{
+		LOL_LOG(LogLOL, Error, TEXT("LOLPlayerController not found!"));
+		return FGameplayAbilityTargetDataHandle();
+	}
+
+	FVector MouseVector, MouseDirection;
+	PC->DeprojectMousePositionToWorld(MouseVector, MouseDirection);
+	FVector End = MouseVector + MouseDirection * 1000.f;
+	
+	bool HitDetected = GetWorld()->LineTraceSingleByChannel(OutHitResult, MouseVector, End, CCHANNEL_ABACTION, Params);
 
 	FGameplayAbilityTargetDataHandle DataHandle;
 	if (HitDetected)
@@ -56,7 +84,7 @@ FGameplayAbilityTargetDataHandle ALOLTA_Trace::MakeTargetData() const
 	if (bShowDebug)
 	{
 		FColor DrawColor = HitDetected ? FColor::Green : FColor::Red;
-		DrawDebugLine(GetWorld(), Start, End, DrawColor, false, 5.0f);
+		DrawDebugLine(GetWorld(), MouseVector, End, DrawColor, true, 5.0f);
 	}
 #endif
 

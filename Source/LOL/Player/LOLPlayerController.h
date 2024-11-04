@@ -53,11 +53,16 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> SkillAction;
 
-	// Move
-	TObjectPtr<class ALOLPlayer> TargetActor;
+	// Move & Auto Attack
+public:
+	class ALOLCharacter* GetTargetActor();
+
+protected:
+	TObjectPtr<class ALOLCharacter> TargetActor;
 	
 	void Move();
-	void AutoAttack(class AActor* Target);
+	bool CanAttack();
+	void AutoAttack();
 	void EndAutoAttack();
 
 	// Pawn
@@ -68,6 +73,9 @@ protected:
 protected:
 	UPROPERTY(EditAnywhere, Category = GAS)
 	TObjectPtr<class UAbilitySystemComponent> ASC;
+
+	UPROPERTY(EditAnywhere, Category = Attribute)
+	const class ULOLCharacterAttributeSet* AttributeSet;
 
 	void GASInputPressed(int32 InputId);
 	void GASInputReleased(int32 InputId);

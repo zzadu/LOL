@@ -6,11 +6,15 @@
 #include "AbilitySystemComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "LOL.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Character/LOLPlayer.h"
+#include "GAS/Attribute/LOLCharacterAttributeSet.h"
 #include "GAS/Character/LOLGASPlayer.h"
 #include "Kismet/KismetMathLibrary.h"
 
+
+class ULOLCharacterAttributeSet;
 
 ALOLPlayerController::ALOLPlayerController()
 {
@@ -33,11 +37,10 @@ void ALOLPlayerController::PlayerTick(float DeltaTime)
 
 	if (TargetActor)
 	{
-		float const Distance = FVector::Dist(TargetActor->GetActorLocation(), LOLPlayer->GetActorLocation());
-		if (Distance < 300.f)
+		if (CanAttack())
 		{
 			StopMovement();
-			AutoAttack(TargetActor);
+			AutoAttack();
 		}
 		else
 		{
@@ -76,7 +79,14 @@ void ALOLPlayerController::SetupGASInputComponent()
 
 		EnhancedInputComponent->BindAction(SkillAction, ETriggerEvent::Triggered, this, &ALOLPlayerController::GASInputPressed, 0);
 		EnhancedInputComponent->BindAction(SkillAction, ETriggerEvent::Completed, this, &ALOLPlayerController::GASInputReleased, 0);
+
+		AttributeSet = ASC->GetSet<ULOLCharacterAttributeSet>();
 	}
+}
+
+ALOLCharacter* ALOLPlayerController::GetTargetActor()
+{
+	return TargetActor;
 }
 
 void ALOLPlayerController::Move()
@@ -87,9 +97,10 @@ void ALOLPlayerController::Move()
 	if (bHitSuccessful)
 	{
 		FRotator Rotator = UKismetMathLibrary::FindLookAtRotation(LOLPlayer->GetActorLocation(), Hit.Location);
+		Rotator.Pitch = 0.0f;
 		LOLPlayer->SetActorRotation(Rotator);
 		
-		TargetActor = Cast<ALOLPlayer>(Hit.GetActor());
+		TargetActor = Cast<ALOLCharacter>(Hit.GetActor());
 		if (!TargetActor)
 		{
 			EndAutoAttack();
@@ -98,7 +109,25 @@ void ALOLPlayerController::Move()
 	}
 }
 
-void ALOLPlayerController::AutoAttack(class AActor* Target)
+bool ALOLPlayerController::CanAttack()
+{
+	float const Distance = FVector::Dist(TargetActor->GetActorLocation(), LOLPlayer->GetActorLocation());
+
+	if (!AttributeSet)
+	{
+		LOL_LOG(LogLOL, Error, TEXT("LOLCharacterAttributeSet not found!"));
+		return false;
+	}
+	
+	if (Distance <= AttributeSet->GetAttackRange())
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void ALOLPlayerController::AutoAttack()
 {
 	FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromInputID(10);
 	if (Spec)
@@ -106,7 +135,6 @@ void ALOLPlayerController::AutoAttack(class AActor* Target)
 			if (Spec->Level != 0)
 			{
 				ASC->TryActivateAbility(Spec->Handle);
-				
 			}
 	}
 }

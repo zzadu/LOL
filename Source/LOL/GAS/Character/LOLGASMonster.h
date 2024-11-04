@@ -3,30 +3,29 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/PlayerState.h"
+#include "Character/LOLMonster.h"
 #include "AbilitySystemInterface.h"
-#include "LOLGASPlayerState.generated.h"
+#include "LOLGASMonster.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LOL_API ALOLGASPlayerState : public APlayerState, public IAbilitySystemInterface
+class LOL_API ALOLGASMonster : public ALOLMonster, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
 public:
-	ALOLGASPlayerState();
+	ALOLGASMonster();
 
+public:
 	virtual class UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	virtual void PossessedBy(AController* NewController) override;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = GAS)
 	TObjectPtr<class UAbilitySystemComponent> ASC;
-	
-	UPROPERTY()
-	TObjectPtr<class ULOLCharacterAttributeSet> AttributeSet;
 
 	UPROPERTY()
-	TArray<TObjectPtr<class ULOLSkillAttributeSet>> SkillSet;
+	TObjectPtr<class ULOLCharacterAttributeSet> AttributeSet;
 };
