@@ -56,17 +56,20 @@ protected:
 	// Move & Auto Attack
 public:
 	class ALOLCharacter* GetTargetActor();
+	void SetTargetActor(ALOLCharacter* InTargetActor);
 
 protected:
 	TObjectPtr<class ALOLCharacter> TargetActor;
 	
-	void Move();
 	bool CanAttack();
+	void Move();
 	void AutoAttack();
-	void EndAutoAttack();
-
+	
+public:
+	void LookAt(FVector Location);
+	
 	// Pawn
-	protected:
+protected:
 	TObjectPtr<class ALOLGASPlayer> LOLPlayer;
 
 	// ASC

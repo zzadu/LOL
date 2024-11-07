@@ -12,6 +12,7 @@
 #include "GAS/Attribute/LOLCharacterAttributeSet.h"
 #include "GAS/Character/LOLGASPlayer.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "GameplayTagContainer.h"
 
 
 class ULOLCharacterAttributeSet;
@@ -40,11 +41,8 @@ void ALOLPlayerController::PlayerTick(float DeltaTime)
 		if (CanAttack())
 		{
 			StopMovement();
+			GASInputReleased(10);
 			AutoAttack();
-		}
-		else
-		{
-			UAIBlueprintHelperLibrary::SimpleMoveToActor(this, TargetActor);
 		}
 	}
 }
@@ -89,25 +87,11 @@ ALOLCharacter* ALOLPlayerController::GetTargetActor()
 	return TargetActor;
 }
 
-void ALOLPlayerController::Move()
+void ALOLPlayerController::SetTargetActor(ALOLCharacter* InTargetActor)
 {
-	FHitResult Hit;
-	bool bHitSuccessful = GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, OUT Hit);
-
-	if (bHitSuccessful)
-	{
-		FRotator Rotator = UKismetMathLibrary::FindLookAtRotation(LOLPlayer->GetActorLocation(), Hit.Location);
-		Rotator.Pitch = 0.0f;
-		LOLPlayer->SetActorRotation(Rotator);
-		
-		TargetActor = Cast<ALOLCharacter>(Hit.GetActor());
-		if (!TargetActor)
-		{
-			EndAutoAttack();
-			UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, Hit.Location);
-		}
-	}
+	this->TargetActor = InTargetActor;
 }
+
 
 bool ALOLPlayerController::CanAttack()
 {
@@ -127,25 +111,41 @@ bool ALOLPlayerController::CanAttack()
 	return false;
 }
 
-void ALOLPlayerController::AutoAttack()
+void ALOLPlayerController::Move()
 {
+	// 움직이기 전에 공격(스킬) 멈추기
+	FGameplayAbilitySpec* AttackSpec = ASC->FindAbilitySpecFromInputID(11);
+	if (AttackSpec)
+	{
+		ASC->CancelAbility(AttackSpec->Ability);
+	}
+	
 	FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromInputID(10);
 	if (Spec)
 	{
-			if (Spec->Level != 0)
-			{
-				ASC->TryActivateAbility(Spec->Handle);
-			}
+		if (Spec->IsActive())
+		{
+			ASC->AbilitySpecInputPressed(*Spec);
+		}
+		ASC->TryActivateAbility(Spec->Handle);
 	}
 }
 
-void ALOLPlayerController::EndAutoAttack()
+void ALOLPlayerController::AutoAttack()
 {
-	FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromInputID(10);
+	FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromInputID(11);
 	if (Spec)
 	{
-		ASC->CancelAbility(Spec->Ability);
+		ASC->TryActivateAbility(Spec->Handle);
 	}
+}
+
+
+void ALOLPlayerController::LookAt(FVector Location)
+{
+	FRotator Rotator = UKismetMathLibrary::FindLookAtRotation(LOLPlayer->GetActorLocation(), Location);
+	Rotator.Pitch = 0.0f;
+	LOLPlayer->SetActorRotation(Rotator);
 }
 
 void ALOLPlayerController::GASInputPressed(int32 InputId)
