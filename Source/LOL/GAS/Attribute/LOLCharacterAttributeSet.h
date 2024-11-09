@@ -24,18 +24,49 @@ class LOL_API ULOLCharacterAttributeSet : public UAttributeSet
 public:
 	ULOLCharacterAttributeSet();
 
+	ATTRIBUTE_ACCESSORS(ULOLCharacterAttributeSet, Level);
+	ATTRIBUTE_ACCESSORS(ULOLCharacterAttributeSet, Experience);
+	ATTRIBUTE_ACCESSORS(ULOLCharacterAttributeSet, MaxExperience);
+	ATTRIBUTE_ACCESSORS(ULOLCharacterAttributeSet, Mana);
+	ATTRIBUTE_ACCESSORS(ULOLCharacterAttributeSet, MaxMana);
 	ATTRIBUTE_ACCESSORS(ULOLCharacterAttributeSet, AttackRange);
 	ATTRIBUTE_ACCESSORS(ULOLCharacterAttributeSet, MaxAttackRange);
 	ATTRIBUTE_ACCESSORS(ULOLCharacterAttributeSet, AttackRate);
 	ATTRIBUTE_ACCESSORS(ULOLCharacterAttributeSet, MaxAttackRate);
 	ATTRIBUTE_ACCESSORS(ULOLCharacterAttributeSet, Health);
 	ATTRIBUTE_ACCESSORS(ULOLCharacterAttributeSet, MaxHealth);
+	ATTRIBUTE_ACCESSORS(ULOLCharacterAttributeSet, Damage);
 
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
 	virtual void PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) override;
 
+	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
 
 protected:
+	UPROPERTY(BlueprintReadOnly, Category = "Stat", meta = (AllowPrivateAccess = "true"))
+	FGameplayAttributeData Level;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Stat", meta = (AllowPrivateAccess = "true"))
+	FGameplayAttributeData Experience;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Stat", meta = (AllowPrivateAccess = "true"))
+	FGameplayAttributeData MaxExperience;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Stat", meta = (AllowPrivateAccess = "true"))
+	FGameplayAttributeData Mana;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Stat", meta = (AllowPrivateAccess = "true"))
+	FGameplayAttributeData MaxMana;
+	
+	UPROPERTY(BlueprintReadOnly, Category = "Health", meta = (AllowPrivateAccess = "true"))
+	FGameplayAttributeData Health;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Health", meta = (AllowPrivateAccess = "true"))
+	FGameplayAttributeData MaxHealth;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attack", meta = (AllowPrivateAccess = "true"))
+	FGameplayAttributeData Damage;
+	
 	UPROPERTY(BlueprintReadOnly, Category = "Attack", meta = (AllowPrivateAccess = "true"))
 	FGameplayAttributeData AttackRange;
 
@@ -48,9 +79,4 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Attack", meta = (AllowPrivateAccess = "true"))
 	FGameplayAttributeData MaxAttackRate;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Health", meta = (AllowPrivateAccess = "true"))
-	FGameplayAttributeData Health;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Health", meta = (AllowPrivateAccess = "true"))
-	FGameplayAttributeData MaxHealth;
 };

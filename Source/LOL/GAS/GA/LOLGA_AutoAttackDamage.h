@@ -23,4 +23,7 @@ public:
 protected:
 	UFUNCTION()
 	void GiveDamage();
+
+	UPROPERTY(EditAnywhere, Category = "GAS")
+	TSubclassOf<class UGameplayEffect> AttackDamageEffect;
 };

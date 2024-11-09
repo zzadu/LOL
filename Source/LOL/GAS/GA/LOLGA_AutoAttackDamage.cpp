@@ -24,34 +24,55 @@ void ULOLGA_AutoAttackDamage::ActivateAbility(const FGameplayAbilitySpecHandle H
 
 	GiveDamage();
 	
-	bool bReplicateEndAbility = true;
-	bool bWasCancelled = false;
-	EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
 void ULOLGA_AutoAttackDamage::GiveDamage()
 {
-	UAbilitySystemComponent* SourceASC = GetAbilitySystemComponentFromActorInfo_Checked();
 	ALOLGASPlayer* SourceActor = Cast<ALOLGASPlayer>(GetActorInfo().AvatarActor.Get());
-	ALOLCharacter* TargetActor = SourceActor->GetController()->GetTargetActor();
-	UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor);
 
-	if (!SourceASC || !TargetASC)
+	ALOLPlayerController* PC = SourceActor->GetController();
+	if (!PC)
 	{
-		LOL_LOG(LogLOL, Error, TEXT("ASC not found!"));
-		return;
+		LOL_LOG(LogLOL, Error, TEXT("LOLPlayerController not found!"));
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 	}
 
-	const ULOLCharacterAttributeSet* SourceAttr = SourceASC->GetSet<ULOLCharacterAttributeSet>();
-	ULOLCharacterAttributeSet* TargetAttr = const_cast<ULOLCharacterAttributeSet*>(TargetASC->GetSet<ULOLCharacterAttributeSet>());
+	FHitResult Hit;
+	bool bHitSuccessful = PC->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, OUT Hit);
 
-	if (!SourceAttr || !TargetAttr)
+	if (bHitSuccessful)
 	{
-		LOL_LOG(LogLOL, Error, TEXT("Attribute not found!"));
-		return;
-	}
+		if (ALOLCharacter* TargetActor = Cast<ALOLCharacter>(Hit.GetActor()))
+		{
+			//FGameplayAbilityTargetData* TargetData = new FGameplayAbilityTargetData();
+			//FGameplayAbilityTargetData_SingleTargetHit * Data = new FGameplayAbilityTargetData_SingleTargetHit();
+			FGameplayAbilityTargetData_ActorArray* TargetData = new FGameplayAbilityTargetData_ActorArray();
+			TargetData->SetActors({ TargetActor });
+			//Data->SetActors({TargetActor});
+			TargetData->SetActors({TargetActor});
+			FGameplayAbilityTargetDataHandle DataHandle;
+			DataHandle.Add(TargetData);
 
-	const float AttackDamage = SourceAttr->GetAttackRate();
-	TargetAttr->SetHealth(TargetAttr->GetHealth() - AttackDamage);
-		
+			FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingGameplayEffectSpec(AttackDamageEffect);
+			if (EffectSpecHandle.IsValid())
+			{
+				ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpecHandle, DataHandle);
+			}
+		}
+	}
+	
+	// FGameplayAbilityTargetData* TargetData = new FGameplayAbilityTargetData();
+	// TargetData->GetActors().Add(SourceActor->GetController()->GetTargetActor());
+	// FGameplayAbilityTargetDataHandle TargetDataHandle;
+	// TargetDataHandle.Add(TargetData);
+	//
+	// FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingGameplayEffectSpec(AttackDamageEffect);
+	// if (EffectSpecHandle.IsValid())
+	// {
+	// 	ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpecHandle, TargetDataHandle);
+	// }
+
+	bool bReplicateEndAbility = true;
+	bool bWasCancelled = false;
+	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
