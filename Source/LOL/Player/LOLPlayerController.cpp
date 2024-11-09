@@ -3,6 +3,7 @@
 
 #include "Player/LOLPlayerController.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
@@ -74,12 +75,25 @@ void ALOLPlayerController::SetupGASInputComponent()
 	if (IsValid(ASC) && IsValid(InputComponent))
 	{
 		UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent);
+		
+		for (int32 InputId = 0; InputId < LearnActions.Num(); InputId++)
+		{
+			// Learn Action
+			EnhancedInputComponent->BindAction(LearnActions[InputId], ETriggerEvent::Started, this, &ALOLPlayerController::OnLearnSkill, InputId);
 
-		EnhancedInputComponent->BindAction(SkillAction, ETriggerEvent::Triggered, this, &ALOLPlayerController::GASInputPressed, 0);
-		EnhancedInputComponent->BindAction(SkillAction, ETriggerEvent::Completed, this, &ALOLPlayerController::GASInputReleased, 0);
+			// Use Skill Action
+			EnhancedInputComponent->BindAction(SkillActions[InputId], ETriggerEvent::Started, this, &ALOLPlayerController::GASInputPressed, InputId);
+			EnhancedInputComponent->BindAction(SkillActions[InputId], ETriggerEvent::Completed, this, &ALOLPlayerController::GASInputReleased, InputId);
+		}
 
 		AttributeSet = ASC->GetSet<ULOLCharacterAttributeSet>();
+		LevelUp();
 	}
+}
+
+void ALOLPlayerController::OnLearnSkill(int32 InputId)
+{
+	LOLPlayer->LearnSkill(InputId);
 }
 
 ALOLCharacter* ALOLPlayerController::GetTargetActor()
@@ -113,7 +127,7 @@ bool ALOLPlayerController::CanAttack()
 
 void ALOLPlayerController::Move()
 {
-	// 움직이기 전에 공격(스킬) 멈추기
+	// 움직이기 전에 공격 멈추기
 	FGameplayAbilitySpec* AttackSpec = ASC->FindAbilitySpecFromInputID(11);
 	if (AttackSpec)
 	{
@@ -138,6 +152,22 @@ void ALOLPlayerController::AutoAttack()
 	{
 		ASC->TryActivateAbility(Spec->Handle);
 	}
+}
+
+void ALOLPlayerController::LevelUp()
+{
+	FGameplayEffectContextHandle EffectContextHandle = ASC->MakeEffectContext();
+	EffectContextHandle.AddSourceObject(this);
+	FGameplayEffectSpecHandle EffectSpecHandle = ASC->MakeOutgoingSpec(LevelUpEffect, AttributeSet->GetLevel() + 1, EffectContextHandle);
+	if (EffectSpecHandle.IsValid())
+	{
+		ASC->BP_ApplyGameplayEffectSpecToSelf(EffectSpecHandle);
+	}
+	
+	
+	// FGameplayEventData PayloadData;
+	// PayloadData.EventMagnitude = AttributeSet->GetLevel() + 1;
+	// UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(LOLPlayer, LevelUpTag, PayloadData);
 }
 
 

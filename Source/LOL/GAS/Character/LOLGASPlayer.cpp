@@ -5,6 +5,7 @@
 #include "AbilitySystemComponent.h"
 #include "GAS/Player/LOLGASPlayerState.h"
 #include "Player/LOLPlayerController.h"
+#include "LOL.h"
 
 ALOLGASPlayer::ALOLGASPlayer()
 {
@@ -33,14 +34,6 @@ void ALOLGASPlayer::PossessedBy(AController* NewController)
 			StartSpec.InputID = StartInputAbility.Key;
 			ASC->GiveAbility(StartSpec);
 		}
-
-		int32 InputId = 0;
-		for (const auto& SkillAbility : SkillAbilities)
-		{
-			FGameplayAbilitySpec StartSpec(SkillAbility);
-			StartSpec.InputID = InputId++;
-			ASC->GiveAbility(StartSpec);
-		}
 		
 		LOLPlayerController->SetupGASInputComponent();
 	}
@@ -51,6 +44,25 @@ void ALOLGASPlayer::SetupPlayerInputComponent(class UInputComponent* inputCompon
 	Super::SetupPlayerInputComponent(inputComponent);
 
 	//LOLPlayerController->SetupGASInputComponent();
+}
+
+void ALOLGASPlayer::LearnSkill(int32 InputId)
+{
+	if (FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromInputID(InputId))
+	{
+		Spec->Level++;
+		
+		LOL_LOG(LogLOL, Log, TEXT("Current Skill %d Level: %d"), InputId, Spec->Level);
+	}
+	else {
+		FGameplayAbilitySpec AbilitySpec(*SkillAbilities[InputId], 1);
+		AbilitySpec.InputID = InputId;
+		FGameplayAbilitySpecHandle SpecHandle = ASC->GiveAbility(AbilitySpec);
+
+		LOL_LOG(LogLOL, Log, TEXT("Current Skill %d Level: %d"), InputId, AbilitySpec.Level);
+
+		//SpecHandles.Add(SpecHandle);
+	}
 }
 
 

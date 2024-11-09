@@ -24,6 +24,8 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
+	void LearnSkill(int32 InputId);
+
 protected:
 	UPROPERTY(EditAnywhere, Category = GAS)
 	TObjectPtr<class UAbilitySystemComponent> ASC;
@@ -38,10 +40,10 @@ protected:
 	TArray<TSubclassOf<class UGameplayAbility>> SkillAbilities;
 
 public:
-	FORCEINLINE virtual class UAnimMontage* GetSkillActionMontage() const { return SkillActionMontage; }
+	FORCEINLINE virtual class UAnimMontage* GetSkillActionMontage(int32 InputId) const { return SkillActionMontages[InputId]; }
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = GAS)
-	TObjectPtr<class UAnimMontage> SkillActionMontage;
+	TArray<TObjectPtr<class UAnimMontage>> SkillActionMontages;
 
 };

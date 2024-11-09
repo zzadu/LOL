@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "GameplayTags.h"
 #include "LOLPlayerController.generated.h"
 
 class UAbilitySystemComponent;
@@ -37,6 +38,7 @@ public:
 	void SetupInputMappingContext();
 	virtual void SetupInputComponent() override;
 	void SetupGASInputComponent();
+	void OnLearnSkill(int32 InputId);
 	
 	// Input Section
 protected:
@@ -45,13 +47,13 @@ protected:
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> AutoAttackAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> MoveAction;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TArray<TObjectPtr<class UInputAction>> LearnActions;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> SkillAction;
+	TArray<TObjectPtr<class UInputAction>> SkillActions;
 
 	// Move & Auto Attack
 public:
@@ -64,6 +66,15 @@ protected:
 	bool CanAttack();
 	void Move();
 	void AutoAttack();
+
+protected:
+	UPROPERTY(EditAnywhere, Category = GAS, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class UGameplayEffect> LevelUpEffect;
+
+	UPROPERTY(EditAnywhere, Category = Tag, Meta=(Categories=Event))
+	FGameplayTag LevelUpTag;
+	
+	void LevelUp();
 	
 public:
 	void LookAt(FVector Location);

@@ -20,7 +20,7 @@ void ULOLGA_Skill::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 
 	ALOLGASPlayer* LOLGASPlayer = CastChecked<ALOLGASPlayer>(ActorInfo->AvatarActor.Get());
 
-	UAbilityTask_PlayMontageAndWait* PlaySkillTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, TEXT("PlaySkill"), LOLGASPlayer->GetSkillActionMontage(), 1.0f);
+	UAbilityTask_PlayMontageAndWait* PlaySkillTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, TEXT("PlaySkill"), LOLGASPlayer->GetSkillActionMontage(GetCurrentAbilitySpec()->InputID), 1.0f);
 	PlaySkillTask->OnCompleted.AddDynamic(this, &ULOLGA_Skill::OnCompleteCallback);
 	PlaySkillTask->OnInterrupted.AddDynamic(this, &ULOLGA_Skill::OnInterruptedCallback);
 	PlaySkillTask->ReadyForActivation();
