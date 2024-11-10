@@ -46,4 +46,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = GAS)
 	TArray<TObjectPtr<class UAnimMontage>> SkillActionMontages;
 
+	// widget
+	UPROPERTY(VisibleAnywhere);
+	TObjectPtr<class ULOLGASWidgetComponent> HpBar;
 };

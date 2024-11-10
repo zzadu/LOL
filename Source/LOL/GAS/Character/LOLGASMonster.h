@@ -28,4 +28,9 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<class ULOLCharacterAttributeSet> AttributeSet;
+	
+	// widget
+protected:
+	UPROPERTY(VisibleAnywhere);
+	TObjectPtr<class ULOLGASWidgetComponent> HpBar;
 };
