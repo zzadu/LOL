@@ -65,3 +65,16 @@ ALOLPlayerController* ALOLPlayer::GetController()
 {
 	return LOLPlayerController;
 }
+
+void ALOLPlayer::SetDead()
+{
+	Super::SetDead();
+
+	// 죽은 애니메이션 넣어주기
+	// 몇초 지나면 사라짐
+	
+	if (LOLPlayerController)
+	{
+		DisableInput(LOLPlayerController);
+	}
+}

@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "GAS/GA/LOLGA_Skill.h"
+#include "GAS/GA/Skill/LOLGA_Skill.h"
 #include "LOL.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Character/LOLCharacter.h"

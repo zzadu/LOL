@@ -3,3 +3,9 @@
 
 #include "Character/LOLMonster.h"
 
+void ALOLMonster::SetDead()
+{
+	Super::SetDead();
+
+	Destroy();
+}

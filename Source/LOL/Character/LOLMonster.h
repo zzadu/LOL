@@ -14,4 +14,7 @@ class LOL_API ALOLMonster : public ALOLCharacter
 {
 	GENERATED_BODY()
 	
+	// Dead
+	protected:
+	virtual void SetDead() override;
 };

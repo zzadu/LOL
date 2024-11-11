@@ -40,6 +40,8 @@ protected:
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, category=Attribute)
 	TArray<UCurveTable*> CurveData;
-	
+
+	// Dead
+	virtual void SetDead() override;
 
 };

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "LOLGA_SkillBase.h"
 #include "Abilities/GameplayAbility.h"
 #include "LOLGA_Skill.generated.h"
 
@@ -10,7 +11,7 @@
  * 
  */
 UCLASS()
-class LOL_API ULOLGA_Skill : public UGameplayAbility
+class LOL_API ULOLGA_Skill : public ULOLGA_SkillBase
 {
 	GENERATED_BODY()
 
@@ -27,9 +28,7 @@ public:
 	virtual void InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
 
 protected:
-	UFUNCTION()
-	void OnCompleteCallback();
-
-	UFUNCTION()
-	void OnInterruptedCallback();
+	virtual void OnCompleteCallback() override;
+	
+	virtual void OnInterruptedCallback() override;
 };

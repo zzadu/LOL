@@ -8,6 +8,7 @@
 #include "LOL.h"
 #include "UI/LOLGASWidgetComponent.h"
 #include "UI/LOLGASUserWidget.h"
+#include "GAS/Attribute/LOLCharacterAttributeSet.h"
 
 ALOLGASPlayer::ALOLGASPlayer()
 {
@@ -37,6 +38,8 @@ void ALOLGASPlayer::PossessedBy(AController* NewController)
 		ASC = GASPS->GetAbilitySystemComponent();
 		ASC->InitAbilityActorInfo(GASPS, this);
 
+		ASC->GetSet<ULOLCharacterAttributeSet>()->OnOutOfHealth.AddDynamic(this, &ALOLGASPlayer::OnOutOfHealth);
+
 		for (const auto& StartAbility : StartAbilities)
 		{
 			FGameplayAbilitySpec StartSpec(StartAbility);
@@ -63,7 +66,8 @@ void ALOLGASPlayer::SetupPlayerInputComponent(class UInputComponent* inputCompon
 
 void ALOLGASPlayer::LearnSkill(int32 InputId)
 {
-	if (FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromInputID(InputId))
+	FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromInputID(InputId);
+	if (Spec)
 	{
 		Spec->Level++;
 		
@@ -78,6 +82,12 @@ void ALOLGASPlayer::LearnSkill(int32 InputId)
 
 		//SpecHandles.Add(SpecHandle);
 	}
+	OnSkillLevelUp.Broadcast(this);
+}
+
+void ALOLGASPlayer::OnOutOfHealth()
+{
+	SetDead();
 }
 
 

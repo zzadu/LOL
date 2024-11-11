@@ -37,4 +37,10 @@ void ALOLGASMonster::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 
 	ASC->InitAbilityActorInfo(this, this);
+	AttributeSet->OnOutOfHealth.AddDynamic(this, &ALOLGASMonster::OnOutOfHealth);
+}
+
+void ALOLGASMonster::OnOutOfHealth()
+{
+	SetDead();
 }

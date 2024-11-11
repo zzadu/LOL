@@ -33,4 +33,7 @@ protected:
 protected:
 	UPROPERTY(VisibleAnywhere);
 	TObjectPtr<class ULOLGASWidgetComponent> HpBar;
+
+	UFUNCTION()
+	virtual void OnOutOfHealth();
 };

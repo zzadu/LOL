@@ -7,6 +7,8 @@
 #include "AbilitySystemInterface.h"
 #include "LOLGASPlayer.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSkillLevelUp, ALOLGASPlayer*, AvatarActor);
+
 /**
  * 
  */
@@ -25,6 +27,11 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
 	void LearnSkill(int32 InputId);
+
+	UFUNCTION()
+	virtual void OnOutOfHealth();
+
+	FOnSkillLevelUp OnSkillLevelUp;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = GAS)

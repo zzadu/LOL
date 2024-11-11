@@ -24,17 +24,27 @@ class LOL_API ULOLSkillAttributeSet : public UAttributeSet
 public:
 	ULOLSkillAttributeSet();
 
+	ATTRIBUTE_ACCESSORS(ULOLSkillAttributeSet, Level);
 	ATTRIBUTE_ACCESSORS(ULOLSkillAttributeSet, SkillRange);
 	ATTRIBUTE_ACCESSORS(ULOLSkillAttributeSet, MaxSkillRange);
 	ATTRIBUTE_ACCESSORS(ULOLSkillAttributeSet, SkillRadius);
 	ATTRIBUTE_ACCESSORS(ULOLSkillAttributeSet, MaxSkillRadius);
-	ATTRIBUTE_ACCESSORS(ULOLSkillAttributeSet, SkillRate);
-	ATTRIBUTE_ACCESSORS(ULOLSkillAttributeSet, MaxSkillRate);
+	ATTRIBUTE_ACCESSORS(ULOLSkillAttributeSet, SkillAttackDamage);
+	ATTRIBUTE_ACCESSORS(ULOLSkillAttributeSet, MaxSkillAttackDamage);
+	ATTRIBUTE_ACCESSORS(ULOLSkillAttributeSet, SkillAbilityPowerDamage);
+	ATTRIBUTE_ACCESSORS(ULOLSkillAttributeSet, MaxSkillAbilityPowerDamage);
+	ATTRIBUTE_ACCESSORS(ULOLSkillAttributeSet, ManaComsumption);
+	ATTRIBUTE_ACCESSORS(ULOLSkillAttributeSet, Cooldown);
+	ATTRIBUTE_ACCESSORS(ULOLSkillAttributeSet, MoveSpeed);
+	ATTRIBUTE_ACCESSORS(ULOLSkillAttributeSet, AttackSpeed);
 
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
 	virtual void PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) override;
 
 protected:
+	UPROPERTY(BlueprintReadOnly, Category = "Skill", meta = (AllowPrivateAccess = "true"))
+	FGameplayAttributeData Level;
+	
 	UPROPERTY(BlueprintReadOnly, Category = "Skill", meta = (AllowPrivateAccess = "true"))
 	FGameplayAttributeData SkillRange;
 
@@ -48,10 +58,27 @@ protected:
 	FGameplayAttributeData MaxSkillRadius;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Skill", meta = (AllowPrivateAccess = "true"))
-	FGameplayAttributeData SkillRate;
+	FGameplayAttributeData SkillAttackDamage;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Skill", meta = (AllowPrivateAccess = "true"))
-	FGameplayAttributeData MaxSkillRate;
-	
+	FGameplayAttributeData MaxSkillAttackDamage;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Skill", meta = (AllowPrivateAccess = "true"))
+	FGameplayAttributeData SkillAbilityPowerDamage;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Skill", meta = (AllowPrivateAccess = "true"))
+	FGameplayAttributeData MaxSkillAbilityPowerDamage;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Skill", meta = (AllowPrivateAccess = "true"))
+	FGameplayAttributeData ManaComsumption;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Skill", meta = (AllowPrivateAccess = "true"))
+	FGameplayAttributeData Cooldown;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Skill", meta = (AllowPrivateAccess = "true"))
+	FGameplayAttributeData MoveSpeed;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Skill", meta = (AllowPrivateAccess = "true"))
+	FGameplayAttributeData AttackSpeed;
 	
 };

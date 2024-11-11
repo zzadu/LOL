@@ -61,7 +61,7 @@ void ULOLGA_SkillAttackHitCheck::OnTraceResultCallback(const FGameplayAbilityTar
 			Rotator.Pitch = 0.0f;
 			GetAvatarActorFromActorInfo()->SetActorRotation(Rotator);
 			
-			const float AttackDamage = SourceAttr->GetSkillRate();
+			const float AttackDamage = SourceAttr->GetSkillAttackDamage();
 			TargetAttr->SetHealth(TargetAttr->GetHealth() - AttackDamage);
 		}
 		else

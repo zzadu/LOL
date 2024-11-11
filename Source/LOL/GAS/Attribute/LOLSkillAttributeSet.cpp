@@ -5,30 +5,26 @@
 #include "LOL.h"
 
 ULOLSkillAttributeSet::ULOLSkillAttributeSet()
-	: SkillRange(300.f),
-	MaxSkillRange(500.f),
-	SkillRadius(50.f),
-	MaxSkillRadius(100.f),
-	SkillRate(50.f),
-	MaxSkillRate(100.f)
+	: Level(0.0f),
+	SkillRange(0.f),
+	MaxSkillRange(0.f),
+	SkillRadius(0.f),
+	MaxSkillRadius(0.f),
+	SkillAttackDamage(0.f),
+	MaxSkillAttackDamage(0.f),
+	SkillAbilityPowerDamage(0.0f),
+	MaxSkillAbilityPowerDamage(0.0f),
+	ManaComsumption(0.0f),
+	Cooldown(0.0f),
+	MoveSpeed(0.0f),
+	AttackSpeed(0.0f)
 {
 }
 
 void ULOLSkillAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
 {
 	//Super::PreAttributeChange(Attribute, NewValue);
-	if (Attribute == GetSkillRangeAttribute())
-	{
-		NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxSkillRange());
-	}
-	else if (Attribute == GetSkillRadiusAttribute())
-	{
-		NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxSkillRadius());
-	}
-	else if (Attribute == GetSkillRateAttribute())
-	{
-		NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxSkillRate());
-	}
+
 }
 
 void ULOLSkillAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)
@@ -42,7 +38,7 @@ void ULOLSkillAttributeSet::PostAttributeChange(const FGameplayAttribute& Attrib
 	{
 		LOL_LOG(LogLOL, Log, TEXT("Skill Radius: %f -> %f"), OldValue, NewValue);
 	}
-	else if (Attribute == GetSkillRateAttribute())
+	else if (Attribute == GetSkillAttackDamageAttribute())
 	{
 		LOL_LOG(LogLOL, Log, TEXT("Skill Rate: %f -> %f"), OldValue, NewValue);
 	}
