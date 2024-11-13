@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbility.h"
+#include "GameplayAbilitySpec.h"
 #include "LOLGA_SkillBase.generated.h"
 
 /**
@@ -37,13 +38,25 @@ protected:
 
 protected:
 	UPROPERTY()
+	class ALOLGASPlayer* LOLGASPlayer;
+	
+	UPROPERTY()
 	TObjectPtr<class ULOLSkillAttributeSet> AttributeSet;
 
 	UPROPERTY(EditAnywhere, Category = GAS, Meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class UGameplayEffect> LevelUpEffect;
 
+	UPROPERTY(EditAnywhere, Category = GAS, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class UGameplayEffect> SkillEffect;
+
 public:
 	UFUNCTION()
-	void LevelUp(ALOLGASPlayer* AvatarActor);
-	
+	void LevelUp();
+
+protected:
+	UPROPERTY()
+	TObjectPtr<class UAnimMontage> ActiveSkillActionMontage;
+
+	UPROPERTY(EditAnywhere, Category = GAS, Meta = (AllowPrivateAccess = "true"))
+	bool isUlt = false;
 };

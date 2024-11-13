@@ -7,6 +7,8 @@
 #include "LOL.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "GAS/Character/LOLGASPlayer.h"
+#include "GameFramework/CharacterMovementComponent.h"
+
 
 ULOLGA_SkillBase::ULOLGA_SkillBase()
 {
@@ -21,12 +23,27 @@ void ULOLGA_SkillBase::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 
 	LOL_LOG(LogLOL, Log, TEXT("Begin"));
 
-	ALOLGASPlayer* LOLGASPlayer = CastChecked<ALOLGASPlayer>(ActorInfo->AvatarActor.Get());
+	LOLGASPlayer = CastChecked<ALOLGASPlayer>(ActorInfo->AvatarActor.Get());
 
-	UAbilityTask_PlayMontageAndWait* PlaySkillTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, TEXT("PlaySkill"), LOLGASPlayer->GetSkillActionMontage(GetCurrentAbilitySpec()->InputID), 1.0f);
-	PlaySkillTask->OnCompleted.AddDynamic(this, &ULOLGA_SkillBase::OnCompleteCallback);
-	PlaySkillTask->OnInterrupted.AddDynamic(this, &ULOLGA_SkillBase::OnInterruptedCallback);
-	PlaySkillTask->ReadyForActivation();
+	if (!LOLGASPlayer)
+	{
+		CancelAbility(Handle, ActorInfo, ActivationInfo, true);
+	}
+	
+	ActiveSkillActionMontage = LOLGASPlayer->GetSkillActionMontage(GetCurrentAbilitySpec()->InputID);
+	if (!ActiveSkillActionMontage)
+	{
+		CancelAbility(Handle, ActorInfo, ActivationInfo, true);
+	}
+
+	LOLGASPlayer->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+
+	UAbilityTask_PlayMontageAndWait* PlayMontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, TEXT("SkillMontage"), ActiveSkillActionMontage, 1.0f);
+	PlayMontageTask->OnCompleted.AddDynamic(this, &ULOLGA_SkillBase::OnCompleteCallback);
+	PlayMontageTask->OnInterrupted.AddDynamic(this, &ULOLGA_SkillBase::OnInterruptedCallback);
+
+	PlayMontageTask->ReadyForActivation();
+
 }
 
 void ULOLGA_SkillBase::CancelAbility(const FGameplayAbilitySpecHandle Handle,
@@ -39,6 +56,11 @@ void ULOLGA_SkillBase::CancelAbility(const FGameplayAbilitySpecHandle Handle,
 void ULOLGA_SkillBase::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
+	if (LOLGASPlayer)
+	{
+		LOLGASPlayer->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+	}
+	
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 	LOL_LOG(LogLOL, Log, TEXT("End"));
 }
@@ -55,7 +77,7 @@ void ULOLGA_SkillBase::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo,
 
 	LOL_LOG(LogLOL, Log, TEXT("Give"));
 	
-	ALOLGASPlayer* LOLGASPlayer = CastChecked<ALOLGASPlayer>(ActorInfo->AvatarActor.Get());
+	LOLGASPlayer = CastChecked<ALOLGASPlayer>(ActorInfo->AvatarActor.Get());
 	LOLGASPlayer->OnSkillLevelUp.AddDynamic(this, &ULOLGA_SkillBase::LevelUp);
 }
 
@@ -73,13 +95,22 @@ void ULOLGA_SkillBase::OnInterruptedCallback()
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
-void ULOLGA_SkillBase::LevelUp(ALOLGASPlayer* AvatarActor)
+void ULOLGA_SkillBase::LevelUp()
 {
-	UAbilitySystemComponent* ASC = AvatarActor->GetAbilitySystemComponent();
+	if (isUlt && GetAbilityLevel() >= 4)
+	{
+		return;
+	}
+	if (!isUlt && GetAbilityLevel() >= 6)
+	{
+		return;
+	}
+	
+	UAbilitySystemComponent* ASC = LOLGASPlayer->GetAbilitySystemComponent();
 
 	FGameplayEffectContextHandle EffectContextHandle = ASC->MakeEffectContext();
 	EffectContextHandle.AddSourceObject(this);
-	FGameplayEffectSpecHandle EffectSpecHandle = ASC->MakeOutgoingSpec(LevelUpEffect, AttributeSet->GetLevel() + 1, EffectContextHandle);
+	FGameplayEffectSpecHandle EffectSpecHandle = ASC->MakeOutgoingSpec(LevelUpEffect, GetAbilityLevel(), EffectContextHandle);
 	if (EffectSpecHandle.IsValid())
 	{
 		ASC->BP_ApplyGameplayEffectSpecToSelf(EffectSpecHandle);

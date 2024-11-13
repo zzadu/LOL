@@ -79,10 +79,11 @@ void ALOLGASPlayer::LearnSkill(int32 InputId)
 		FGameplayAbilitySpecHandle SpecHandle = ASC->GiveAbility(AbilitySpec);
 
 		LOL_LOG(LogLOL, Log, TEXT("Current Skill %d Level: %d"), InputId, AbilitySpec.Level);
-
+		
 		//SpecHandles.Add(SpecHandle);
 	}
-	OnSkillLevelUp.Broadcast(this);
+	OnSkillLevelUp.Broadcast();
+
 }
 
 void ALOLGASPlayer::OnOutOfHealth()

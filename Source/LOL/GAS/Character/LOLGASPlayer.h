@@ -7,7 +7,7 @@
 #include "AbilitySystemInterface.h"
 #include "LOLGASPlayer.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSkillLevelUp, ALOLGASPlayer*, AvatarActor);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSkillLevelUp);
 
 /**
  * 
@@ -47,7 +47,8 @@ protected:
 	TArray<TSubclassOf<class UGameplayAbility>> SkillAbilities;
 
 public:
-	FORCEINLINE virtual class UAnimMontage* GetSkillActionMontage(int32 InputId) const { return SkillActionMontages[InputId]; }
+	FORCEINLINE void SetAutoAttackActionMontage(UAnimMontage* InAutoAttackActionMontage) { AutoAttackActionMontage = InAutoAttackActionMontage; }
+	FORCEINLINE class UAnimMontage* GetSkillActionMontage(int32 InputId) const { return SkillActionMontages[InputId]; }
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = GAS)
