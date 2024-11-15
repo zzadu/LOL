@@ -19,6 +19,7 @@ void ULOLGA_ChangeMontage::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 	
 	ChangeMesh();
+	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 }
 
 void ULOLGA_ChangeMontage::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
@@ -33,9 +34,15 @@ void ULOLGA_ChangeMontage::ChangeMesh()
 
 	if (LOLGASPlayer)
 	{
+		if (NewMontage.GetClass() == LOLGASPlayer->GetAutoAttackActionMontage()->GetClass())
+		{
+			isDefault = false;
+		}
+		
 		if (isDefault)
 		{
-			DefaultMontage = LOLGASPlayer->GetCurrentMontage();
+			isDefault = false;
+			DefaultMontage = LOLGASPlayer->GetAutoAttackActionMontage();
 			LOLGASPlayer->SetAutoAttackActionMontage(NewMontage);
 			
 			FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingGameplayEffectSpec(SkillEffect);
@@ -44,7 +51,6 @@ void ULOLGA_ChangeMontage::ChangeMesh()
 				// 중첩돼서 더해지지 않도록 수정
 				ApplyGameplayEffectSpecToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpecHandle);
 			}
-			isDefault = false;
 		}
 		else
 		{

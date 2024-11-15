@@ -25,6 +25,8 @@ void UAnimNotify_GASAttack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequen
 		if (OwnerActor)
 		{
 			FGameplayEventData PayloadData;
+			int32 level = FCString::Atoi(*Animation->GetName());
+			PayloadData.EventMagnitude = level;
 			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(OwnerActor, TriggerGameplayTag, PayloadData);
 		}
 	}

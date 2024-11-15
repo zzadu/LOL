@@ -20,7 +20,7 @@ public:
 	ULOLAT_Trace();
 
 	UFUNCTION(BlueprintCallable, Category = "Ability/Tasks", meta = (DisplayName = "WaitForTrace", HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
-	static ULOLAT_Trace* CreateTask(UGameplayAbility* OwningAbility, TSubclassOf<class ALOLTA_Trace> TargetActorClass, bool isTargeting, bool isMultiTargeting);
+	static ULOLAT_Trace* CreateTask(UGameplayAbility* OwningAbility, TSubclassOf<class AGameplayAbilityTargetActor> TargetActorClass);
 
 	virtual void Activate() override;
 	virtual void OnDestroy(bool bInOwnerFinished) override;
@@ -37,12 +37,9 @@ public:
 
 protected:
 	UPROPERTY()
-	TSubclassOf<class ALOLTA_Trace> TargetActorClass;
+	TSubclassOf<class ALOLTA_TraceBase> TargetActorClass;
 
 	UPROPERTY()
-	TObjectPtr<ALOLTA_Trace> SpawnedTargetActor;
-
-	bool isTargeting;
-	bool isMultiTargeting;
+	TObjectPtr<ALOLTA_TraceBase> SpawnedTargetActor;
 	
 };

@@ -5,7 +5,7 @@
 #include "LOL.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "GAS/GA/AT/LOLAT_Trace.h"
-#include "GAS/GA/TA/LOLTA_Trace.h"
+#include "GAS/GA/TA/LOLTA_SingleTarget.h"
 #include "GAS/Attribute/LOLCharacterAttributeSet.h"
 #include "GAS/Attribute/LOLSkillAttributeSet.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -21,54 +21,93 @@ void ULOLGA_SkillAttackHitCheck::ActivateAbility(const FGameplayAbilitySpecHandl
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	if (isTargeting && !isMultiTargeting)
-	{
-		ULOLAT_Trace* SkillAttackTraceTask = ULOLAT_Trace::CreateTask(this, ALOLTA_Trace::StaticClass(), isTargeting, isMultiTargeting);
-		SkillAttackTraceTask->OnComplete.AddDynamic(this, &ULOLGA_SkillAttackHitCheck::OnTraceResultCallback);
-		SkillAttackTraceTask->ReadyForActivation();
-	}
+	CurrentLevel = TriggerEventData->EventMagnitude;
+	
+	ULOLAT_Trace* SkillAttackTraceTask = ULOLAT_Trace::CreateTask(this, TargetActorClass);
+	SkillAttackTraceTask->OnComplete.AddDynamic(this, &ULOLGA_SkillAttackHitCheck::OnTraceResultCallback);
+	SkillAttackTraceTask->ReadyForActivation();
 }
 
 void ULOLGA_SkillAttackHitCheck::OnTraceResultCallback(const FGameplayAbilityTargetDataHandle& TargetDataHandle)
 {
+	// 단일 타겟
 	if (UAbilitySystemBlueprintLibrary::TargetDataHasHitResult(TargetDataHandle, 0))
 	{
 		FHitResult HitResult = UAbilitySystemBlueprintLibrary::GetHitResultFromTargetData(TargetDataHandle, 0);
 		LOL_LOG(LogLOL, Log, TEXT("Target %s Detected"), *HitResult.GetActor()->GetName());
 
 		UAbilitySystemComponent* SourceASC = GetAbilitySystemComponentFromActorInfo_Checked();
-		UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(HitResult.GetActor());
 
-		if (!SourceASC || !TargetASC)
+		if (!SourceASC)
 		{
 			LOL_LOG(LogLOL, Error, TEXT("ASC not found!"));
 			return;
 		}
 
 		const ULOLSkillAttributeSet* SourceAttr = SourceASC->GetSet<ULOLSkillAttributeSet>();
-		ULOLCharacterAttributeSet* TargetAttr = const_cast<ULOLCharacterAttributeSet*>(TargetASC->GetSet<ULOLCharacterAttributeSet>());
 
-		if (!SourceAttr || !TargetAttr)
+		if (!SourceAttr)
 		{
 			LOL_LOG(LogLOL, Error, TEXT("Attribute not found!"));
 			return;
 		}
 
-		float const Distance = FVector::Dist(GetAvatarActorFromActorInfo()->GetActorLocation(), HitResult.GetActor()->GetActorLocation());
-		if (Distance < SourceAttr->GetSkillRange())
+		FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingGameplayEffectSpec(SkillEffect, CurrentLevel);
+
+		if (isTargeting)
 		{
-			FRotator Rotator = UKismetMathLibrary::FindLookAtRotation(GetAvatarActorFromActorInfo()->GetActorLocation(), HitResult.GetActor()->GetActorLocation());
-			Rotator.Pitch = 0.0f;
-			GetAvatarActorFromActorInfo()->SetActorRotation(Rotator);
+			if (EffectSpecHandle.IsValid())
+			{
+				float const Distance = FVector::Dist(GetAvatarActorFromActorInfo()->GetActorLocation(), HitResult.GetActor()->GetActorLocation());
+				if (Distance < SourceAttr->GetSkillRange())
+				{
+					FRotator Rotator = UKismetMathLibrary::FindLookAtRotation(GetAvatarActorFromActorInfo()->GetActorLocation(), HitResult.GetActor()->GetActorLocation());
+					Rotator.Pitch = 0.0f;
+					GetAvatarActorFromActorInfo()->SetActorRotation(Rotator);
 			
-			const float AttackDamage = SourceAttr->GetSkillAttackDamage();
-			TargetAttr->SetHealth(TargetAttr->GetHealth() - AttackDamage);
+					ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpecHandle, TargetDataHandle);
+				}
+				else
+				{
+					LOL_LOG(LogLOL, Error, TEXT("Distance is far"));
+				}
+			}
 		}
 		else
 		{
-			LOL_LOG(LogLOL, Error, TEXT("Distance is far"));
+			if (EffectSpecHandle.IsValid())
+			{
+				//EffectSpecHandle.Data->SetSetByCallerMagnitude(ABTAG_DATA_DAMAGE, -SourceAttribute->GetAttackRate());
+				ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpecHandle, TargetDataHandle);
+		
+				FGameplayEffectContextHandle CueContextHandle = UAbilitySystemBlueprintLibrary::GetEffectContext(EffectSpecHandle);
+				CueContextHandle.AddHitResult(HitResult);
+				FGameplayCueParameters CueParam;
+				CueParam.EffectContext = CueContextHandle;
+
+				//TargetASC->ExecuteGameplayCue(ABTAG_GAMEPLAYCUE_CHARACTER_ATTACKHIT, CueParam);
+			}
 		}
 		
+	}
+	// 다중 타겟
+	else if (UAbilitySystemBlueprintLibrary::TargetDataHasActor(TargetDataHandle, 0))
+	{
+		UAbilitySystemComponent* SourceASC = GetAbilitySystemComponentFromActorInfo_Checked();
+		//FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingGameplayEffectSpec(SkillEffect, CurrentLevel);
+		FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingGameplayEffectSpec(SkillEffect);
+		if (EffectSpecHandle.IsValid())
+		{
+			//EffectSpecHandle.Data->SetSetByCallerMagnitude(ABTAG_DATA_DAMAGE, -SourceAttribute->GetAttackRate());
+			ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, EffectSpecHandle, TargetDataHandle);
+
+			FGameplayEffectContextHandle CueContextHandle = UAbilitySystemBlueprintLibrary::GetEffectContext(EffectSpecHandle);
+			CueContextHandle.AddActors(TargetDataHandle.Data[0].Get()->GetActors(), false);
+			FGameplayCueParameters CueParam;
+			CueParam.EffectContext = CueContextHandle;
+
+			//SourceASC->ExecuteGameplayCue(ABTAG_GAMEPLAYCUE_CHARACTER_ATTACKHIT, CueParam);
+		}
 	}
 
 	bool bReplicateEndAbility = true;

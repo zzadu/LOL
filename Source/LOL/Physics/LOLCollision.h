@@ -1,5 +1,5 @@
 #pragma once
 
-#define CPROFILE_ABCAPSULE TEXT("LOLCapsule")
-#define CPROFILE_ABTRIGGER TEXT("LOLTrigger")
-#define CCHANNEL_ABACTION ECC_GameTraceChannel1
+#define CPROFILE_LOLCAPSULE TEXT("LOLCapsule")
+#define CPROFILE_LOLTRIGGER TEXT("LOLTrigger")
+#define CCHANNEL_LOLACTION ECC_GameTraceChannel1

@@ -8,6 +8,7 @@
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "GAS/Character/LOLGASPlayer.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Player/LOLPlayerController.h"
 
 
 ULOLGA_SkillBase::ULOLGA_SkillBase()
@@ -38,10 +39,21 @@ void ULOLGA_SkillBase::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 
 	LOLGASPlayer->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 
-	UAbilityTask_PlayMontageAndWait* PlayMontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, TEXT("SkillMontage"), ActiveSkillActionMontage, 1.0f);
+	ALOLPlayerController* PC = Cast<ALOLPlayer>(ActorInfo->AvatarActor.Get())->GetController();
+	if (!PC)
+	{
+		LOL_LOG(LogLOL, Error, TEXT("LOLPlayerController not found!"));
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+	}
+	FHitResult Hit;
+	bool bHitSuccessful = PC->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, OUT Hit);
+
+	Hit.Location.Z = ActorInfo->AvatarActor.Get()->GetActorLocation().Z;
+	PC->LookAt(Hit.Location);
+
+	UAbilityTask_PlayMontageAndWait* PlayMontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, FName(FString::Printf(TEXT("%d"), GetAbilityLevel())), ActiveSkillActionMontage, 1.0f);
 	PlayMontageTask->OnCompleted.AddDynamic(this, &ULOLGA_SkillBase::OnCompleteCallback);
 	PlayMontageTask->OnInterrupted.AddDynamic(this, &ULOLGA_SkillBase::OnInterruptedCallback);
-
 	PlayMontageTask->ReadyForActivation();
 
 }

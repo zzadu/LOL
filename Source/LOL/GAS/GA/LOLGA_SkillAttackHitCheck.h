@@ -25,10 +25,17 @@ protected:
 	void OnTraceResultCallback(const FGameplayAbilityTargetDataHandle& TargetData);
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SkillType", meta = (AllowPrivateAccess = "true"))
-	bool isTargeting = false;
+	UPROPERTY(EditAnywhere, Category = GAS, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class UGameplayEffect> SkillEffect;
+
+	UPROPERTY(EditAnywhere, Category = GAS, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class UGameplayEffect> Buff;
+	
+	int32 CurrentLevel;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SkillType", meta = (AllowPrivateAccess = "true"))
-	bool isMultiTargeting = false;
-	
+	TSubclassOf<class AGameplayAbilityTargetActor> TargetActorClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SkillType", meta = (AllowPrivateAccess = "true"))
+	bool isTargeting = false;
 };

@@ -2,19 +2,17 @@
 
 
 #include "GAS/GA/AT/LOLAT_Trace.h"
-#include "GAS/GA/TA/LOLTA_Trace.h"
+#include "GAS/GA/TA/LOLTA_SingleTarget.h"
 #include "AbilitySystemComponent.h"
 
 ULOLAT_Trace::ULOLAT_Trace()
 {
 }
 
-ULOLAT_Trace* ULOLAT_Trace::CreateTask(UGameplayAbility* OwningAbility, TSubclassOf<ALOLTA_Trace> TargetActorClass, bool isTargeting, bool isMultiTargeting)
+ULOLAT_Trace* ULOLAT_Trace::CreateTask(UGameplayAbility* OwningAbility, TSubclassOf<AGameplayAbilityTargetActor> TargetActorClass)
 {
 	ULOLAT_Trace* NewTask = NewAbilityTask<ULOLAT_Trace>(OwningAbility);
-
-	NewTask->isTargeting = isTargeting;
-	NewTask->isMultiTargeting = isMultiTargeting;
+	
 	NewTask->TargetActorClass = TargetActorClass;
 	return NewTask;
 }
@@ -41,16 +39,12 @@ void ULOLAT_Trace::OnDestroy(bool bInOwnerFinished)
 
 void ULOLAT_Trace::SpawnAndInitializeTargetActor()
 {
-	if (isTargeting && !isMultiTargeting)
-	{
-		// 타겟팅, 단일 타겟팅
-		SpawnedTargetActor = Cast<ALOLTA_Trace>(Ability->GetWorld()->SpawnActorDeferred<AGameplayAbilityTargetActor>(TargetActorClass, FTransform::Identity, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn));
+	SpawnedTargetActor = Cast<ALOLTA_TraceBase>(Ability->GetWorld()->SpawnActorDeferred<AGameplayAbilityTargetActor>(TargetActorClass, FTransform::Identity, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn));
 
-		if (SpawnedTargetActor)
-		{
-			SpawnedTargetActor->SetShowDebug(true);
-			SpawnedTargetActor->TargetDataReadyDelegate.AddUObject(this, &ULOLAT_Trace::OnTargetDataReadyCallback);
-		}
+	if (SpawnedTargetActor)
+	{
+		SpawnedTargetActor->SetShowDebug(true);
+		SpawnedTargetActor->TargetDataReadyDelegate.AddUObject(this, &ULOLAT_Trace::OnTargetDataReadyCallback);
 	}
 }
 

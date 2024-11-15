@@ -1,45 +1,23 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "GAS/GA/TA/LOLTA_Trace.h"
-#include "Abilities/GameplayAbility.h"
-#include "GameFramework/Character.h"
-#include "Components/CapsuleComponent.h"
-#include "Physics/LOLCollision.h"
-#include "DrawDebugHelpers.h"
-#include "AbilitySystemComponent.h"
-#include "GAS/Attribute/LOLCharacterAttributeSet.h"
+#include "GAS/GA/TA/LOLTA_LineSingleTarget.h"
+
 #include "AbilitySystemBlueprintLibrary.h"
-#include "InteractiveToolManager.h"
 #include "LOL.h"
-#include "Character/LOLCharacter.h"
 #include "Character/LOLPlayer.h"
+#include "GameFramework/Character.h"
 #include "GAS/Attribute/LOLSkillAttributeSet.h"
+#include "Physics/LOLCollision.h"
 #include "Player/LOLPlayerController.h"
+#include "Components/CapsuleComponent.h"
 
-ALOLTA_Trace::ALOLTA_Trace()
+ALOLTA_LineSingleTarget::ALOLTA_LineSingleTarget()
 {
 }
 
-void ALOLTA_Trace::StartTargeting(UGameplayAbility* Ability)
+FGameplayAbilityTargetDataHandle ALOLTA_LineSingleTarget::MakeTargetData() const
 {
-	Super::StartTargeting(Ability);
-
-	SourceActor = Ability->GetCurrentActorInfo()->AvatarActor.Get();
-}
-
-void ALOLTA_Trace::ConfirmTargetingAndContinue()
-{
-	if (SourceActor)
-	{
-		FGameplayAbilityTargetDataHandle DataHandle = MakeTargetData();
-		TargetDataReadyDelegate.Broadcast(DataHandle);
-	}
-}
-
-FGameplayAbilityTargetDataHandle ALOLTA_Trace::MakeTargetData() const
-{
-	// 타겟팅, 단일 타겟 스킬
 	ACharacter* Character = CastChecked<ACharacter>(SourceActor);
 
 	UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(SourceActor);
@@ -58,7 +36,7 @@ FGameplayAbilityTargetDataHandle ALOLTA_Trace::MakeTargetData() const
 	
 	FHitResult OutHitResult;
 
-	FCollisionQueryParams Params(SCENE_QUERY_STAT(ULOLTA_Trace), false, Character);
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(ALOLTA_LineSingleTarget), false, Character);
 
 	ALOLPlayerController* PC = Cast<ALOLPlayer>(SourceActor)->GetController();
 	if (!PC)
@@ -69,10 +47,11 @@ FGameplayAbilityTargetDataHandle ALOLTA_Trace::MakeTargetData() const
 
 	FVector MouseVector, MouseDirection;
 	PC->DeprojectMousePositionToWorld(MouseVector, MouseDirection);
-	FVector End = MouseVector + MouseDirection * 1000.f;
+	const FVector Forward = Character->GetActorForwardVector();
+	const FVector Start = Character->GetActorLocation() + Forward * Character->GetCapsuleComponent()->GetScaledCapsuleRadius();
+	FVector End = MouseVector + MouseDirection * AttributeSet->GetSkillRange();
 	
-	bool HitDetected = GetWorld()->LineTraceSingleByChannel(OutHitResult, MouseVector, End, CCHANNEL_ABACTION, Params);
-
+	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, CCHANNEL_LOLACTION, FCollisionShape::MakeSphere(AttributeSet->GetSkillRadius()), Params);
 	FGameplayAbilityTargetDataHandle DataHandle;
 	if (HitDetected)
 	{
@@ -84,7 +63,7 @@ FGameplayAbilityTargetDataHandle ALOLTA_Trace::MakeTargetData() const
 	if (bShowDebug)
 	{
 		FColor DrawColor = HitDetected ? FColor::Green : FColor::Red;
-		DrawDebugLine(GetWorld(), MouseVector, End, DrawColor, true, 5.0f);
+		DrawDebugLine(GetWorld(), Start, End, DrawColor, true, 5.0f);
 	}
 #endif
 

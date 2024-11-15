@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbilityTargetActor.h"
-#include "LOLTA_Trace.generated.h"
+#include "LOLTA_TraceBase.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LOL_API ALOLTA_Trace : public AGameplayAbilityTargetActor
+class LOL_API ALOLTA_TraceBase : public AGameplayAbilityTargetActor
 {
 	GENERATED_BODY()
 
 public:
-	ALOLTA_Trace();
+	ALOLTA_TraceBase();
 
 	virtual void StartTargeting(UGameplayAbility* Ability) override;
 
