@@ -10,6 +10,9 @@
 #include "GAS/Attribute/LOLCharacterAttributeSet.h"
 #include "Player/LOLPlayerController.h"
 #include "GameplayTagContainer.h"
+#include "GAS/Character/LOLGASPlayer.h"
+#include "GameFramework/CharacterMovementComponent.h"
+
 
 ULOLGA_Move::ULOLGA_Move()
 {
@@ -63,12 +66,20 @@ void ULOLGA_Move::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const
 	UAbilityTask_MoveToLocation* MoveToLocation = UAbilityTask_MoveToLocation::MoveToLocation(this, TEXT("MoveToLcation"), CachedLocation, 1.0f, nullptr, nullptr);
 	MoveToLocation->OnTargetLocationReached.AddDynamic(this, &ULOLGA_Move::OnCompleteCallback);
 	MoveToLocation->ReadyForActivation();
+
+	
+	UCharacterMovementComponent* CharMoveComp = Cast<UCharacterMovementComponent>(Cast<ALOLPlayer>(ActorInfo->AvatarActor.Get())->GetMovementComponent());
+	if (CharMoveComp)
+	{
+		CharMoveComp->SetMovementMode(MOVE_Walking);
+	}
 }
 
 void ULOLGA_Move::CancelAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateCancelAbility)
 {
 	Super::CancelAbility(Handle, ActorInfo, ActivationInfo, bReplicateCancelAbility);
+	
 }
 
 void ULOLGA_Move::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
@@ -77,6 +88,7 @@ void ULOLGA_Move::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGam
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 
 	LOL_LOG(LogLOL, Log, TEXT("End"));
+	
 }
 
 void ULOLGA_Move::InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,

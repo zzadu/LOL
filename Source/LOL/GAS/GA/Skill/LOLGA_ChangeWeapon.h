@@ -4,32 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "GAS/GA/Skill/LOLGA_SkillBase.h"
-#include "LOLGA_ChangeMontage.generated.h"
+#include "LOLGA_ChangeWeapon.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LOL_API ULOLGA_ChangeMontage : public ULOLGA_SkillBase
+class LOL_API ULOLGA_ChangeWeapon : public ULOLGA_SkillBase
 {
 	GENERATED_BODY()
 
 public:
-	ULOLGA_ChangeMontage();
+	ULOLGA_ChangeWeapon();
 
 public:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
-	
-	UFUNCTION()
-	void ChangeMesh();
-
-protected:
-	UPROPERTY()
-	TObjectPtr<class UAnimMontage> DefaultMontage;
-	
-	UPROPERTY(EditAnywhere, Category = Mesh)
-	TObjectPtr<class UAnimMontage> NewMontage;
-
-	bool isDefault = true;
 };

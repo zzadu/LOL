@@ -91,6 +91,21 @@ void ALOLGASPlayer::OnOutOfHealth()
 	SetDead();
 }
 
+void ALOLGASPlayer::ChangeAnimation(bool ToDefault)
+{
+	if (WeaponAnimations.Num() > 0)
+	{
+		if (ToDefault)
+		{
+			GetMesh()->SetAnimInstanceClass(WeaponAnimations[0]);
+		}
+		else
+		{
+			GetMesh()->SetAnimInstanceClass(WeaponAnimations[1]);
+		}
+	}
+}
+
 
 UAbilitySystemComponent* ALOLGASPlayer::GetAbilitySystemComponent() const
 {

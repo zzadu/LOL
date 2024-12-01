@@ -44,4 +44,15 @@ protected:
 	// Dead
 	virtual void SetDead() override;
 
+protected:
+	bool IsDefault = true;
+
+	// 무기 변경
+public:
+	UFUNCTION(BlueprintCallable)
+	void SetIsDefault(bool NewIsDefault) {this->IsDefault = NewIsDefault;}
+
+	UFUNCTION(BlueprintCallable)
+	bool GetIsDefault() {return this->IsDefault;}
+
 };

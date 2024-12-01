@@ -57,4 +57,11 @@ protected:
 	// widget
 	UPROPERTY(VisibleAnywhere);
 	TObjectPtr<class ULOLGASWidgetComponent> HpBar;
+
+public:
+	void ChangeAnimation(bool ToDefault);
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = GAS)
+	TArray<TObjectPtr<class UClass>> WeaponAnimations;
 };
